@@ -128,6 +128,17 @@ public sealed class TransitivePackageExpander
 
 			string? path = FindPackageSource(pkg.Package, pkg.Version);
 
+			if (pkg.Version.Contains(','))
+			{
+				var packages = NuGetVersionResolver.GetValidVersionsAsync(pkg.Package!, pkg.Version).GetAwaiter().GetResult();
+				all.Remove(pkg);
+				foreach (var packageVersion in packages)
+				{
+					queue.Enqueue((pkg.Package, packageVersion));
+					continue;
+				}
+			}
+
 			if (string.IsNullOrEmpty(path))
 			{
 				missing.Add(pkg);

@@ -86,12 +86,18 @@ public sealed class NuGetPackageScanner
 		{
 			yield break;
 		}
-
-		foreach (var item in doc.Descendants("PackageReference"))
+		foreach (var packageReference in doc.Descendants("PackageReference"))
 		{
-			var id = item.Attribute("Include")?.Value;
-			var version = item.Attribute("Version")?.Value;
-
+			var id = packageReference.Attribute("Include")?.Value;
+			var version = packageReference.Attribute("Version")?.Value;
+			if (version!.Contains(','))
+			{
+				var packages = NuGetVersionResolver.GetValidVersionsAsync(id!, version).GetAwaiter().GetResult();
+				foreach (var item in packages)
+				{
+					Console.WriteLine(item);
+				}
+			}
 			if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(version))
 				yield return (id!, version!);
 		}
